@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Unit {
+  BHUBANESWAR
+  BERHAMPUR
+}
+
+enum PatientStatus {
+  STABLE
+  WATCH
+  CRITICAL
+}
+
+enum PatientDisposition {
+  ACTIVE
+  DISCHARGED
+  SHIFT_OUT
+  DAMA
+  DEATH
+}
+
+enum SuggestionCategory {
+  INVESTIGATION
+  IMAGING
+  CONSULTATION
+  DIFFERENTIAL
+}
+
+enum SuggestionStatus {
+  PENDING
+  ADDRESSED
+}
+
+model Patient {
+  id            String             @id
+  unit          Unit
+  status        PatientStatus      @default(WATCH)
+  disposition   PatientDisposition @default(ACTIVE)
+  latestCareDay Int                @default(0)
+  isActive      Boolean            @default(true)
+  dischargeSummaryText String?
+  dischargeSummaryVersion Int      @default(0)
+  isbars        IsbarEntry[]
+  dailyProgresses DailyProgress[]
+  suggestions   Suggestion[]
+}
+
+model IsbarEntry {
+  id                          String       @id @default(cuid())
+  patientId                   String
+  careDay                     Int
+  identification              String
+  situation                   String
+  background                  String
+  assessment                  String
+  recommendation              String
+  labsSummary                 String
+  imagingSummary              String
+  flagHemodynamicInstability  Boolean      @default(false)
+  flagRespiratoryConcern      Boolean      @default(false)
+  flagNeurologicChange        Boolean      @default(false)
+  flagSepsisConcern           Boolean      @default(false)
+  flagLowUrineOutput          Boolean      @default(false)
+  flagUncontrolledPain        Boolean      @default(false)
+  patient                     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  suggestions                 Suggestion[]
+
+  @@unique([patientId, careDay])
+  @@index([patientId, careDay])
+}
+
+model Suggestion {
+  id        String             @id @default(cuid())
+  patientId String
+  isbarId   String?
+  careDay   Int
+  category  SuggestionCategory
+  content   String
+  rationale String?
+  status    SuggestionStatus   @default(PENDING)
+  patient   Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  isbar     IsbarEntry?        @relation(fields: [isbarId], references: [id], onDelete: SetNull)
+
+  @@index([patientId, careDay, status])
+}
+
+model DailyProgress {
+  id              String   @id @default(cuid())
+  patientId       String
+  careDay         Int
+  progressSummary String
+  keyEvents       String
+  currentSupports String
+  pendingIssues   String
+  nextPlan        String
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([patientId, careDay])
+  @@index([patientId, careDay])
+}

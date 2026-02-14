@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-shell text-ink antialiased;
+}
+
+label {
+  @apply text-sm font-medium text-slate-700;
+}
+
+input,
+select,
+textarea {
+  @apply rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm outline-none transition;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  @apply border-accent ring-2 ring-accent/20;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+  html,
+  body {
+    background: #ffffff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  main {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .print-card {
+    break-inside: avoid;
+    border-color: #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+}
